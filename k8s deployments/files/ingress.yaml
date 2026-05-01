@@ -1,0 +1,45 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: alb-ingress
+  namespace: temporal
+  annotations:
+    # kubernetes.io/ingress.class: alb
+
+    # 🌐 Internet-facing ALB
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+
+    # 🔐 HTTPS listener
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+
+    # 🔥 Attach ACM certificate
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-2:082447916304:certificate/5697c112-e102-4676-a6a1-ad047727ea76
+
+    # 🔁 Redirect HTTP → HTTPS (optional but recommended)
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+
+spec:
+  ingressClassName: alb
+  rules:
+    - host: temporal.dipanshukudiyal.online
+      http:
+        paths:
+
+          # Starter API
+          - path: /order
+            pathType: Prefix
+            backend:
+              service:
+                name: starter-service
+                port:
+                  number: 8080
+
+          # Temporal UI
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: temporal-web
+                port:
+                  number: 8080

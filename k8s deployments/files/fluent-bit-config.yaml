@@ -1,0 +1,64 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluent-bit-config
+  namespace: amazon-cloudwatch
+data:
+  fluent-bit.conf: |
+    [SERVICE]
+        Flush        1
+        Log_Level    info
+        Parsers_File /fluent-bit/etc/parsers.conf
+
+    # Starter logs
+    [INPUT]
+        Name              tail
+        Path              /var/log/containers/*starter*.log
+        Tag               starter.*
+        multiline.parser  cri
+        Refresh_Interval  2
+        Mem_Buf_Limit     5MB
+        Skip_Long_Lines   On
+
+    # Worker logs
+    [INPUT]
+        Name              tail
+        Path              /var/log/containers/*worker*.log
+        Tag               worker.*
+        multiline.parser  cri
+        Refresh_Interval  2
+        Mem_Buf_Limit     5MB
+        Skip_Long_Lines   On
+
+    [FILTER]
+        Name                kubernetes
+        Match               starter.* worker.*
+        Kube_Tag_Prefix     kube.var.log.containers.
+        Merge_Log           On
+        Keep_Log            Off
+
+    # Starter → CloudWatch
+    [OUTPUT]
+        Name                cloudwatch_logs
+        Match               starter.*
+        region              us-east-2
+        log_group_name      /eks/starter
+        log_stream_prefix   starter-
+        auto_create_group   true
+
+    # Worker → CloudWatch
+    [OUTPUT]
+        Name                cloudwatch_logs
+        Match               worker.*
+        region              us-east-2
+        log_group_name      /eks/worker
+        log_stream_prefix   worker-
+        auto_create_group   true
+
+  parsers.conf: |
+    [PARSER]
+        Name        cri
+        Format      regex
+        Regex       ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]*) (?<log>.*)$
+        Time_Key    time
+        Time_Format %Y-%m-%dT%H:%M:%S.%L%z

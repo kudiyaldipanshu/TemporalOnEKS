@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: starter
+  namespace: temporal
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: starter
+  template:
+    metadata:
+      labels:
+        app: starter
+    spec:
+      containers:
+        - name: starter
+          image: 082447916304.dkr.ecr.us-east-2.amazonaws.com/temporal/starter:3.0
+          ports:
+            - containerPort: 8080
+          env:
+            - name: TEMPORAL_HOST
+              value: temporal-frontend.temporal.svc.cluster.local:7233

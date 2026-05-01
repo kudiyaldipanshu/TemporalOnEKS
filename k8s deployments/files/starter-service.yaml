@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: starter-service
+  namespace: temporal
+spec:
+  selector:
+    app: starter
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP

@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  namespace: temporal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      containers:
+        - name: worker
+          image: 082447916304.dkr.ecr.us-east-2.amazonaws.com/temporal/worker:1.0
+          env:
+            - name: TEMPORAL_HOST
+              value: temporal-frontend.temporal.svc.cluster.local:7233

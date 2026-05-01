@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pods-ecr-sa
+  namespace: temporal
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::082447916304:role/TemporalPodsECRRole

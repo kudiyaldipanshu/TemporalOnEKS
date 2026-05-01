@@ -1,0 +1,60 @@
+server:
+  serviceAccount:
+    create: false
+    name: temporal-sa
+  
+  # additionalVolumes:
+  #   - name: secrets-store
+  #     csi:
+  #       driver: secrets-store.csi.k8s.io
+  #       readOnly: true
+  #       volumeAttributes:
+  #         secretProviderClass: "temporal-db-secret"
+
+  # additionalVolumeMounts:
+  #   - name: secrets-store
+  #     mountPath: "/mnt/secrets"
+  #     readOnly: true
+
+  config:
+    persistence:
+      defaultStore: default
+      visibilityStore: visibility
+      
+
+      datastores:
+        default:
+          sql:
+            pluginName: "postgres12_pgx"
+            driverName: "postgres12_pgx"
+            manageSchema: true
+            databaseName: "temporal"
+            connectAddr: "temporal-database.c5ocaeuuou5h.us-east-2.rds.amazonaws.com:5432"
+            connectProtocol: "tcp"
+            user: "temporal"
+
+            # 🔥 THIS is the key part
+            existingSecret: temporal-db-secret
+            secretKey: password
+            connectAttributes:
+              sslmode: require
+
+        visibility:
+          sql:
+            pluginName: "postgres12_pgx"
+            driverName: "postgres12_pgx"
+            manageSchema: true
+            databaseName: "temporal_visibility"
+            connectAddr: "temporal-database.c5ocaeuuou5h.us-east-2.rds.amazonaws.com:5432"
+            connectProtocol: "tcp"
+            user: "temporal"
+
+            existingSecret: temporal-db-secret
+            secretKey: password
+            connectAttributes:
+              sslmode: require
+    namespaces:
+      create: true
+      namespace:
+        - name: default
+          retention: 3d
