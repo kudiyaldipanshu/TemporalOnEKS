@@ -30,7 +30,7 @@ func ReserveInventory(ctx context.Context, input models.OrderInput) error {
 		}
 
 		activity.RecordHeartbeat(ctx, fmt.Sprintf("Reserving inventory step %d/%d", i, steps))
-
+		logger.Info("heartbeat", "progress", i, "activity", "ReserveInventory")
 		time.Sleep(3 * time.Second)
 	}
 
